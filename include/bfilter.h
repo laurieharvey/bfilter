@@ -1,5 +1,6 @@
 #include <functional>
 #include <vector>
+#include <algorithm>
 
 namespace bloom
 {
@@ -68,6 +69,13 @@ namespace bloom
                 }
             }
             return result::possibly;
+        }
+        /*
+         * Clear the filter of all elements
+         */
+        void clear()
+        {
+            std::fill(std::begin(filter_), std::end(filter_), false);
         }
     };
 } // namespace bloom

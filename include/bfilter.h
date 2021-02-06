@@ -14,6 +14,12 @@ namespace bloom
         }
     };
 
+    enum class result
+    {
+        definitely_not  = 0x00,
+        possibly        = 0x01,
+    };
+
     template <typename Value>
     class bfilter
     {
@@ -52,16 +58,16 @@ namespace bloom
          * Check whether the filter possibly contains value or whether
          * it definitely doesn't
          */
-        bool contains(const value_type &value) const
+        result contains(const value_type &value) const
         {
             for (unsigned int i = 0; i < hashes_; ++i)
             {
                 if (!filter_[hash<value_type>{i}(value) % filter_.size()])
                 {
-                    return false;
+                    return result::definitely_not;
                 }
             }
-            return true;
+            return result::possibly;
         }
     };
 } // namespace bloom

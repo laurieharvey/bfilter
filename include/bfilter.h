@@ -1,11 +1,12 @@
 #include <functional>
 #include <vector>
 #include <algorithm>
+#include<random>
 
 namespace bloom
 {
     template <class T>
-    struct hash
+    struct combined_hash
     {
         std::size_t seed;
 
@@ -17,32 +18,43 @@ namespace bloom
 
     enum class result
     {
-        definitely_not  = 0x00,
-        possibly        = 0x01,
+        definitely_not,
+        possibly
     };
 
     template <typename Value>
     class bfilter
     {
         std::vector<bool> filter_;
-        int hashes_;
+        std::vector<std::size_t> seeds_;
 
     public:
         using value_type = Value;
         using size_type = std::vector<bool>::size_type;
-
+        /*
+         * Construct the filter with a number of hashes and size
+         */
         explicit bfilter(int hashes, size_type size)
-            : hashes_(hashes), filter_(size, false)
+            : filter_(size, false),
+              seeds_(hashes)
         {
+            std::mt19937 urbg;
+            std::uniform_int_distribution<std::size_t> distrib(std::numeric_limits<std::size_t>::min(),
+                                                               std::numeric_limits<std::size_t>::max());
+
+            for (int i = 0; i < hashes; i++)
+            {
+                seeds_.push_back(distrib(urbg));
+            }
         }
         /*
          * Insert value into the filter
          */
         void insert(const value_type &value)
         {
-            for (unsigned int i = 0; i < hashes_; ++i)
+            for (const auto seed : seeds_)
             {
-                filter_[hash<value_type>{i}(value) % filter_.size()] = true;
+                filter_[combined_hash<value_type>{seed}(value) % filter_.size()] = true;
             }
         }
         /*
@@ -50,9 +62,9 @@ namespace bloom
          */
         void insert(value_type &&value)
         {
-            for (unsigned int i = 0; i < hashes_; ++i)
+            for (const auto seed : seeds_)
             {
-                filter_[hash<value_type>{i}(value) % filter_.size()] = true;
+                filter_[combined_hash<value_type>{seed}(value) % filter_.size()] = true;
             }
         }
         /*
@@ -61,9 +73,9 @@ namespace bloom
          */
         result contains(const value_type &value) const
         {
-            for (unsigned int i = 0; i < hashes_; ++i)
+            for (const auto seed : seeds_)
             {
-                if (!filter_[hash<value_type>{i}(value) % filter_.size()])
+                if (!filter_[combined_hash<value_type>{seed}(value) % filter_.size()])
                 {
                     return result::definitely_not;
                 }

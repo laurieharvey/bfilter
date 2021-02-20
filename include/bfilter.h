@@ -1,7 +1,7 @@
 #include <functional>
 #include <vector>
 #include <algorithm>
-#include<random>
+#include <random>
 
 namespace bloom
 {
@@ -31,10 +31,11 @@ namespace bloom
     public:
         using value_type = Value;
         using size_type = std::vector<bool>::size_type;
+        using hash_number_type = short;
         /*
          * Construct the filter with a number of hashes and size
          */
-        explicit bfilter(int hashes, size_type size)
+        explicit bfilter(hash_number_type hashes, size_type size)
             : filter_(size, false),
               seeds_(hashes)
         {
@@ -42,7 +43,7 @@ namespace bloom
             std::uniform_int_distribution<std::size_t> distrib(std::numeric_limits<std::size_t>::min(),
                                                                std::numeric_limits<std::size_t>::max());
 
-            for (int i = 0; i < hashes; i++)
+            for (hash_number_type i = 0; i < hashes; i++)
             {
                 seeds_.push_back(distrib(urbg));
             }
@@ -51,16 +52,6 @@ namespace bloom
          * Insert value into the filter
          */
         void insert(const value_type &value)
-        {
-            for (const auto seed : seeds_)
-            {
-                filter_[combined_hash<value_type>{seed}(value) % filter_.size()] = true;
-            }
-        }
-        /*
-         * Insert value into the filter
-         */
-        void insert(value_type &&value)
         {
             for (const auto seed : seeds_)
             {

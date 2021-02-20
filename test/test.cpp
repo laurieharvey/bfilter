@@ -41,7 +41,7 @@ TEST(utilities, optimum_hash_functions)
 
 TEST(bfilter, contains)
 {
-    bloom::bfilter<std::string> bloom_filter(bloom::optimum_hash_number(100, 5), 100);
+    bloom::bfilter<std::string> bloom_filter(5, 100);
 
     ASSERT_EQ(bloom_filter.contains("xyz"), bloom::result::definitely_not);
 
@@ -58,7 +58,7 @@ TEST(bfilter, contains)
 
 TEST(bfilter, clear)
 {
-    bloom::bfilter<std::string> bloom_filter(bloom::optimum_hash_number(100, 5), 100);
+    bloom::bfilter<std::string> bloom_filter(5, 100);
 
     ASSERT_EQ(bloom_filter.contains("abc"), bloom::result::definitely_not);
 
@@ -71,7 +71,7 @@ TEST(bfilter, clear)
     ASSERT_EQ(bloom_filter.contains("abc"), bloom::result::definitely_not);
 }
 
-TEST(bfilter, false_probability)
+TEST(bfilter, hash_functions_sufficiently_independent)
 {
     std::set<int> set;
 
